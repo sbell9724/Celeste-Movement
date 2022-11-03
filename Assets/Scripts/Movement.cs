@@ -6,6 +6,9 @@ using DG.Tweening;
 
 public class Movement : MonoBehaviour
 {
+    public AudioSource jumpSFX;
+    public AudioSource dashSFX;
+
     private Collision coll;
     [HideInInspector]
     public Rigidbody2D rb;
@@ -13,11 +16,11 @@ public class Movement : MonoBehaviour
 
     [Space]
     [Header("Stats")]
-    public float speed = 10;
-    public float jumpForce = 50;
-    public float slideSpeed = 5;
+    public float speed = 7;
+    public float jumpForce = 12;
+    public float slideSpeed = 1;
     public float wallJumpLerp = 10;
-    public float dashSpeed = 20;
+    public float dashSpeed = 40;
 
     [Space]
     [Header("Booleans")]
@@ -31,6 +34,8 @@ public class Movement : MonoBehaviour
 
     private bool groundTouch;
     private bool hasDashed;
+
+    private bool newMovement = false;
 
     public int side = 1;
 
@@ -57,6 +62,11 @@ public class Movement : MonoBehaviour
         float xRaw = Input.GetAxisRaw("Horizontal");
         float yRaw = Input.GetAxisRaw("Vertical");
         Vector2 dir = new Vector2(x, y);
+
+        if(Input.GetKeyDown("e"))
+        {
+            switchParams();
+        }
 
         Walk(dir);
         anim.SetHorizontalMovement(x, y, rb.velocity.y);
@@ -114,6 +124,7 @@ public class Movement : MonoBehaviour
 
             if (coll.onGround)
                 Jump(Vector2.up, false);
+                jumpSFX.Play();
             if (coll.onWall && !coll.onGround)
                 WallJump();
         }
@@ -121,6 +132,7 @@ public class Movement : MonoBehaviour
         if (Input.GetButtonDown("Fire1") && !hasDashed)
         {
             if(xRaw != 0 || yRaw != 0)
+                dashSFX.Play();
                 Dash(xRaw, yRaw);
         }
 
@@ -179,6 +191,27 @@ public class Movement : MonoBehaviour
 
         rb.velocity += dir.normalized * dashSpeed;
         StartCoroutine(DashWait());
+    }
+
+    void switchParams()
+    {
+        newMovement = !newMovement;
+        if(newMovement)
+        {
+            speed = 3;
+            jumpForce = 5;
+            slideSpeed = 10;
+            wallJumpLerp = 20;
+            dashSpeed = 80;
+        }
+        else
+        {
+            speed = 7;
+            jumpForce = 12;
+            slideSpeed = 1;
+            wallJumpLerp = 10;
+            dashSpeed = 40;
+        }
     }
 
     IEnumerator DashWait()
